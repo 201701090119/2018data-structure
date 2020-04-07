@@ -1,0 +1,110 @@
+#include "stdio.h"
+ #include"malloc.h"
+  typedef struct BiTNode {  
+ char data;   
+struct BiTNode *lchild,*rchild; 
+ }BiTNode,*BiTree; 
+ BiTree Create(BiTree T)
+{   char ch; 
+  ch=getchar(); 
+ if(ch=='#')  T=NULL; 
+ else 
+{   
+T=(BiTNode *)malloc(sizeof(BiTNode)); 
+T->data=ch; 
+ T->lchild=Create(T->lchild); 
+ T->rchild=Create(T->rchild); 
+ }   
+return T;  
+}  
+ int node(BiTree T) 
+{  int sum1=0,a,b; 
+ if(T) 
+ {  
+ if(T!=NULL)
+sum1++; 
+  a=node(T->lchild); 
+         sum1+=a;     
+      b=node(T->rchild);  
+        sum1+=b;  
+ }  
+ return sum1; 
+ } 
+ int mnode(BiTree T) 
+{  
+int sum2=0,e,f; 
+ if(T)
+  { 
+ if((T->lchild!=NULL)&&(T->rchild!=NULL))   sum2++;
+  e=mnode(T->lchild); 
+sum2+=e;    
+   f=mnode(T->rchild);   
+   sum2+=f;  
+ } 
+     return sum2;
+ } 
+ void Preorder(BiTree T)
+ { 
+ if(T) 
+{   printf("%c",T->data);
+  Preorder(T->lchild); 
+ Preorder(T->rchild); 
+ }  
+}  
+int Sumleaf(BiTree T) 
+{  
+ int sum=0,m,n; 
+ if(T) 
+{  
+ if((!T->lchild)&&(!T->rchild))  sum++; 
+  m=Sumleaf(T->lchild); 
+ sum+=m; 
+  n=Sumleaf(T->rchild); 
+ sum+=n;  
+} 
+  return sum;  
+}  
+ void zhongxu(BiTree T) 
+{ 
+ if(T) 
+{  
+ zhongxu(T->lchild);
+  printf("%c",T->data); 
+ zhongxu(T->rchild); 
+ }  
+}  
+ void houxu(BiTree T)
+ { 
+ if(T)
+ { 
+  houxu(T->lchild);
+  houxu(T->rchild); 
+ printf("%c",T->data);
+  }
+ }
+ main() 
+{   
+BiTree T;
+   int sum,sum1,sum3; 
+ printf("请输入字符串：\n");  
+T=Create(T);
+  printf("前序遍历:\n"); 
+Preorder(T); printf("\n"); 
+  printf("中序遍历:\n");
+ zhongxu(T);
+ printf("\n");  
+  printf("后序遍历:\n"); 
+ houxu(T);  printf("\n");  
+sum=Sumleaf(T); 
+ printf("树叶数为:\n"); 
+ printf("%d",sum); printf("\n"); 
+ printf("树结点数为:\n"); 
+ sum1=node(T); 
+printf("\n");  
+printf("%d",sum1); 
+printf("\n"); 
+ printf("树满结点数为:\n");
+ sum3=mnode(T);
+ printf("%d",sum3); 
+printf("\n");
+ }

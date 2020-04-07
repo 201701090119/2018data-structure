@@ -1,0 +1,184 @@
+//#include"Matrix.h"  
+#include<stdio.h>  
+#define MAXSIZE 100 
+typedef struct 
+{  
+int i,j;  
+int e; 
+}Triple;   
+typedef struct 
+{  
+Triple data[MAXSIZE+1];   
+int mu,nu,tu;  
+}Matrix; 
+void CreatMatrix(Matrix *m)//矩阵的初始化
+{  
+int p=1,a,b,c;   
+printf("请输入矩阵的行数、列数、非零元的个数（数据用空格隔开）:"); 
+scanf("%d %d %d",&(*m).mu,&(*m).nu,&(*m).tu); 
+while(p<=(*m).tu)  
+{  
+printf("请输入第%d个非零元素的行数，列数，元素值（数据用空格隔开）：",p); 
+ scanf("%d %d %d",&a,&b,&c);  
+(*m).data[0].i=0;  
+(*m).data[0].j=0;  
+(*m).data[p].i=a;  
+(*m).data[p].j=b;  
+(*m).data[p].e=c;  
+p++;   
+}  
+}  
+  
+void PrintMatrix(Matrix m)//矩阵的输出 
+{ 
+int i,j,p=1;  
+printf("  %d行%d列%d个非零元素以矩阵形式输出：\n",m.mu,m.nu,m.tu);  
+for(i=1;i<=m.mu;i++)  
+{  
+for(j=1;j<=m.nu;j++)  
+{  
+if((m.data[p].i==i)&&(m.data[p].j==j))  
+{  
+printf("%4d",m.data[p].e);  
+p++;  
+}   
+else   
+printf("%4d",0);  
+}    
+printf("\n");   
+}  
+}  
+//主程序模块：  
+
+void FastTransposeMatrix(Matrix a,Matrix *b)//采用三元组顺序表存储表示，求稀疏矩阵a的转置矩阵b 
+{ 
+ int p,q,col,t;  
+ int num[MAXSIZE+1];  
+ int cpot[MAXSIZE+1]; 
+ (*b).mu=a.nu;  
+ (*b).nu=a.mu;   
+ (*b).tu=a.tu;  
+ if((*b).tu)  
+ {  
+  for(col=1;col<=a.nu;col++)   
+  num[col]=0;   
+  for(t=1;t<=a.tu;t++)  //求a中每一列含非零元的个数 
+  num[a.data[t].j]++;   
+  cpot[1]=1; //求第col列中第一个非零元在b.data中的序号 
+  for(col=2;col<=a.nu;col++)  
+  cpot[col]=cpot[col-1]+num[col-1];  
+  for(p=1;p<=a.tu;p++)  
+  {  
+    col=a.data[p].j;  
+    q=cpot[col];   
+    (*b).data[q].i=a.data[p].j;  
+    (*b).data[q].j=a.data[p].i;   
+    (*b).data[q].e=a.data[p].e;  
+    cpot[col]++;  
+	}//for p   
+ }//if  
+}//FastTransposeMatrix 
+  
+void AddMatrix(Matrix a,Matrix b,Matrix *c)//采用行逻辑链接的顺序表，求矩阵a和b的和 
+{  
+  int x,ce,pa=1,pb=1,pc=1;  
+  (*c).mu=a.mu;  
+  (*c).nu=b.nu;   
+  (*c).tu=0;   
+  for(x=1;x<=a.mu;x++)//对矩阵的每一行进行加法  
+  {  
+    while(a.data[pa].i==x&&b.data[pb].i==x)  
+	{  
+       if(a.data[pa].j==b.data[pb].j)    
+	   {  
+         ce=a.data[pa].e+b.data[pb].e;  
+         if(ce)//如果和不为零,则将结果保存到C矩阵中对应的位置
+		 {  
+            (*c).data[pc].i=x; 
+            (*c).data[pc].j=a.data[pa].j;  
+            (*c).data[pc].e=ce; 
+            pa++;  
+            pb++;  
+            pc++;   
+		 }  
+	   } 
+      else if(a.data[pa].j>b.data[pb].j)//若a的列数比b的列数大，则将b矩阵对应的值存入c 
+	  { 
+        (*c).data[pc].i=x; 
+        (*c).data[pc].j=b.data[pb].j; 
+        (*c).data[pc].e=b.data[pb].e; 
+        pb++; 
+        pc++;   
+	  }  
+    else //若b的列数比a的列数大，则将a矩阵对应的值存入c  
+		{ 
+      (*c).data[pc].i=x;  
+      (*c).data[pc].j=a.data[pa].j;
+      (*c).data[pc].e=a.data[pa].e; 
+       pa++; 
+      pc++;  
+		}  
+	 }  
+   while(a.data[pa].i==x)//将a矩阵第x行中的剩余元素存入c 
+   { 
+     (*c).data[pc].i=x;  
+     (*c).data[pc].j=a.data[pa].j; 
+     (*c).data[pc].e=a.data[pa].e; 
+      pa++; 
+      pc++;  
+   }  
+   while(b.data[pb].i==x)//将b矩阵第x行中的剩余元素存入c 
+   {  
+     (*c).data[pc].i=x;  
+     (*c).data[pc].j=b.data[pb].j;  
+     (*c).data[pc].e=b.data[pb].e;  
+     pb++;   
+     pc++;   
+   }  
+  }//for  
+ (*c).tu=pc-1;  
+} 
+  
+int main() 
+{  
+Matrix a,b,c;  
+int i,k;    
+printf("输入1进行矩阵的快速转置运算，输入0进行矩阵行逻辑加法运算："); 
+scanf("%d",&i);   
+if(i==1)//选择运算，当i为1时进行矩阵的转置运算，不为1则进行矩阵的加法运算
+ { 
+ printf("创建矩阵A：\n");   
+CreatMatrix(&a);  
+printf("矩阵A以矩阵形式输出为：\n"); 
+PrintMatrix(a);  
+printf("转置后的矩阵为：\n");  
+FastTransposeMatrix(a,&b);  
+printf("以三元组表输出为：\n");  
+for(k=1;k<=b.tu;k++)  
+{  
+printf("%4d %4d %4d\n",b.data[k].i,b.data[k].j,b.data[k].e);   
+}   
+printf("以矩阵的形式输出为：\n");    
+PrintMatrix(b);   
+}  
+else
+{  
+printf("创建矩阵A：\n");  
+CreatMatrix(&a);   
+printf("矩阵A以矩阵形式输出为：\n");   
+PrintMatrix(a);  
+printf("创建矩阵B：\n");  
+CreatMatrix(&b);  
+printf("矩阵B以矩阵形式输出为：\n");  
+PrintMatrix(b);   
+AddMatrix(a,b,&c);  
+printf("A与B的和矩阵C以三元组形式表示为：\n");  
+for(k=1;k<=c.tu;k++) 
+{  
+printf("%4d %4d %4d\n",c.data[k].i,c.data[k].j,c.data[k].e);   
+}   
+printf("A与B的和矩阵C以矩阵的形式表示为：\n");  
+PrintMatrix(c);  
+}    
+return 0;  
+}
